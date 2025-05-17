@@ -14,9 +14,7 @@ Yleiset nopeat algoritmit DFT:n laskemiseen on suunniteltu yleiskäyttöisiksi, 
 Kaupalliset ohjelmistopohjaiset toteutukset ja sovellusspesifit DTMF-dekooderipiirit ovat usein käyttäneet Gerald Goertzelin 1950-luvulla kehittämää Goertzelin algoritmia, jolla ratkaistaan pieni määrä DFT:n yksittäisiä termejä tehokkaasti. Toteutan Goertzelin algoritmin myös omassa projektissani, edellä mainitun ongelman ratkaisu tällä kyseisellä algoritmilla on projektin ydin.
 
 ## Ohjelmalle annettava syöte
-Ohjelmalle annetaan syötteenä aikamuotoinen sarja lineaarisesti kvantisoituja pulssikoodimoduloituja näytteitä, eli käytännössä nauhoitettua kompressoimatonta PCM-audiodataa tietyn pituisena WAV-tiedostona. Algoritmin toiminnan testausta varten syötteenä voidaan käyttää myös laskennallisesti generoituja äänisignaalitiedostoja vastaavassa formaatissa.
-
-Jos ohjelmasta haluaisi nauhoitettujen tiedostojen sijaan reaaliaikaista äänidataa prosessoivan dekooderin, pitäisi ohjelmaan luoda jatkuvan näytevirran tietyn pituisiksi sarjoiksi pilkkova ikkunointiominaisuus, sillä valittu algoritmi vaatii lähtökohtaisesti äärellisen pituisen näytesarjan.
+Ohjelmalle annetaan syötteenä aikamuotoinen sarja lineaarisesti kvantisoituja pulssikoodimoduloituja näytteitä, eli käytännössä nauhoitettua kompressoimatonta PCM-audiodataa tietyn pituisena WAV-tiedostona. Algoritmin toiminnan testausta varten syötteenä voidaan käyttää myös laskennallisesti generoituja äänisignaalitiedostoja vastaavassa formaatissa. Ohjelmasta saattaa saada toteutettua myös nauhoitettujen tiedostojen sijaan reaaliaikaista äänidataa prosessoivan dekooderin melko helposti, mutta tätä joudun selvittämään vielä lisää.
 
 
 ## Aika- ja tilavaativuudet
