@@ -13,7 +13,7 @@ Minulla on paljon kokemusta FFT:n käytöstä työkaluna, mutta en ole juuri syv
 Matemaattista teoriaa on paljon, eivätkä kaikki ole tuttuja muuten kuin pintapuolisesti. Osaamiseni digitaalisesta signaalinkäsittelystä on myös melko puhtaasti työssä ja harrastuksessa opitun varassa, sillä aiheeseen liittyvä opetus on lähinnä teknillisten yliopistojen puolella.
 
 ## Mitä teen seuraavaksi?
-Rakennan projektin kehitys- ja suoritusympäristön kuntoon, sillä se jäi vaiheeseen. Tämän jälkeen alan toteuttamaan projektin ydintoiminnallisuutta.
+Rakennan projektin kehitys- ja suoritusympäristön kuntoon, sillä se jäi vaiheeseen. Tämän jälkeen alan toteuttamaan projektin ydintoiminnallisuutta, mikäli määrittelydokumentin palautteen perusteella ei tule isoja muutoksia.
 
 ## Kulunut työaika
-Arvioin käyttäneeni projektin taustatutkimukseen noin 16 tuntia ja dokumenttien kirjoitukseen 2 tuntia. 
+Arvioin käyttäneeni projektin taustatutkimukseen noin 16 tuntia, dokumenttien kirjoitukseen 2 tuntia ja ympäristön/versionhallinnan pystytykseen vajaan tunnin. 
