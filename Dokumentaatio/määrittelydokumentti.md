@@ -7,16 +7,14 @@ Toteutan kurssiprojektin Pythonilla, koska kurssiin sisältyy vahvasti projektin
 Aion toteuttaa DTMF-signaloinnin dekoodauksen nauhoitetusta äänitiedostosta, jossa taajuusparit esiintyvät luonnollisen valkoisen kohinan ja muiden häiriöiden seassa. Kukin 16:sta DTMF-symbolista koostuu kahdesta tunnetusta siniaaltotaajuudesta, jotka eivät ole keskenään harmonisessa suhteessa, jolloin niitä ei todennäköisesti esiinny vahingossa luonnollisina häiriöinä. Käytännössä ohjelman pitää muuntaa aikadomainissa tallennettu äänidata sopivilla aikaväleillä taajuusdomainiin, tutkia esiintyykö näytesarjan spektrimuotoisessa esityksessä tunnettuja taajuuksia tietyn virhemarginaalin sisällä, ja esittää näitä tarpeeksi suurella todennäköisyydellä tunnistettuja taajuuspareja vastaavat symbolit visuaalisesti käyttäjälle.
 
 ## Toteutettava algoritmi
-Ongelman ratkaisuun voisi käyttää miltei mitä tahansa nopeaa FFT-algoritmia diskreetin Fourier-muunnoksen (DFT) laskemiseksi. Yleinen tällainen olisi esimerkiksi radix-2 Cooley-Tukeyn algoritmi, jossa jonkin kahden potenssin kokoinen näytesarja pilkotaan parillisiin ja parittomiin näytteisiin, joista lasketaan rekursiivisesti DFT:t, jonka jälkeen ne yhdistetään toistensa kanssa.
+Ongelman ratkaisuun voisi käyttää miltei mitä tahansa nopeaa FFT-algoritmia diskreetin Fourier-muunnoksen (DFT) laskemiseksi. Yleinen tällainen olisi esimerkiksi radix-2 Cooley-Tukeyn algoritmi, jossa jonkin kahden potenssin kokoinen näytesarja pilkotaan parillisiin ja parittomiin näytteisiin, joista lasketaan rekursiivisesti DFT:t, jonka jälkeen ne yhdistetään toistensa kanssa yhdeksi spektriksi.
 
 Yleiset nopeat algoritmit DFT:n laskemiseen on suunniteltu yleiskäyttöisiksi, jolloin niissä käytännössä lasketaan syötesarjan ristikorrelaatio jokaisen mahdollisen taajuuslokeron kanssa. Koska DTMF-signalointi käyttää vain kahdeksaa tunnettua taajuutta, ei koko syötteen kaistanleveyden mukaista lokerointia kuitenkaan kannata laskea.
 
 Kaupalliset ohjelmistopohjaiset toteutukset ja sovellusspesifit DTMF-dekooderipiirit ovat usein käyttäneet Gerald Goertzelin 1950-luvulla kehittämää Goertzelin algoritmia, jolla ratkaistaan pieni määrä DFT:n yksittäisiä termejä tehokkaasti. Toteutan Goertzelin algoritmin myös omassa projektissani, edellä mainitun ongelman ratkaisu tällä kyseisellä algoritmilla on projektin ydin.
 
 ## Ohjelmalle annettava syöte
-Ohjelmalle annetaan syötteenä aikamuotoinen sarja lineaarisesti kvantisoituja pulssikoodimoduloituja näytteitä, eli käytännössä kompressoimatonta PCM-audiodataa tietyn pituisena WAV-tiedostona. Algoritmin toiminnan testausta varten syötteenä voidaan käyttää myös laskennallisesti generoituja äänisignaalitiedostoja vastaavassa formaatissa.
-
-Jos ohjelmasta haluaisi nauhoitettujen tiedostojen sijaan reaaliaikaista äänidataa prosessoivan dekooderin, pitäisi ohjelmaan luoda jatkuvan näytevirran diskreeteiksi sarjoiksi pilkkova ikkunointiominaisuus, sillä valittu algoritmi vaatii lähtökohtaisesti äärellisen pituisen näytesarjan.
+Ohjelmalle annetaan syötteenä aikamuotoinen sarja lineaarisesti kvantisoituja pulssikoodimoduloituja näytteitä, eli käytännössä nauhoitettua kompressoimatonta PCM-audiodataa tietyn pituisena WAV-tiedostona. Algoritmin toiminnan testausta varten syötteenä voidaan käyttää myös laskennallisesti generoituja äänisignaalitiedostoja vastaavassa formaatissa. Ohjelmasta saattaa saada toteutettua myös nauhoitettujen tiedostojen sijaan reaaliaikaista äänidataa prosessoivan dekooderin melko helposti, mutta tätä joudun selvittämään vielä lisää.
 
 
 ## Aika- ja tilavaativuudet
