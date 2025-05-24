@@ -7,7 +7,7 @@ import os
 SAMPLE_RATE = 8000 #8 kHz sampling rate, common in telephone and analog radio with ~4 kHz max. audio bandwidth.
 FRAME_SIZE = 205 #~25,6 ms window duration. Commonly chosen to align DFT frequency bins well with DTMF tone frequencies.
 STEP_SIZE = 80 #Overlapped frames are processed with 10 ms stepped intervals. This is to get better timing resolution for short tones and breaks.
-SILENCE_ENERGY_THRESHOLD = 1000  #Adjust later after testing, currently used for rough silence detection for human typed tones with long breaks.
+SILENCE_THRESHOLD = 1000  #Adjust later after testing, currently used for rough silence detection for human typed tones with long breaks.
 
 
 #Open, validate and read a WAV file into a list of individual real-valued PCM sample integers.
@@ -61,10 +61,10 @@ def split_into_overlapping_frames(samples, frame_size, step_size):
     return frames
 
 
-#Calculate the spectral energy in each frame.
+#Calculate the average power in each frame.
 def is_silent_frame(frame, threshold):
-    energy = sum(s ** 2 for s in frame) / len(frame)
-    return energy < threshold
+    avg_power = sum(s ** 2 for s in frame) / len(frame)
+    return avg_power < threshold
 
 
 #Placeholder for Goertzel frequency detection, the function will process a single frame and detect DTMF tones.
@@ -86,7 +86,7 @@ def main():
 
         #Only process non-silent frames.
         for idx, frame in enumerate(frames):
-            if is_silent_frame(frame, SILENCE_ENERGY_THRESHOLD):
+            if is_silent_frame(frame, SILENCE_THRESHOLD):
                 print(f"Frame {idx}: Silence / below threshold")
             else:
                 symbol = process_frame(frame)
