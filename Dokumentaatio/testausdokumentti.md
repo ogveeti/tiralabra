@@ -1,7 +1,7 @@
 # Testausraportti
 
 ## Yksikkötestauksen kattavuusraportti.
-![Kuvankaappaus kattavuusraportista](Dokumentaatio/test%20coverage.png)
+![Kuvankaappaus kattavuusraportista](Dokumentaatio/test_coverage.png)
 
 ## Mitä on testattu, miten tämä tehtiin?
 Ohjelmaa on testattu automaattisilla yksikkö- ja integraatiotesteillä, sekä laajemmin manuaalisesti kokonaisuutena.
