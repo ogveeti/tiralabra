@@ -1,7 +1,7 @@
 # Testausraportti
 
 ## Yksikkötestauksen kattavuusraportti.
-![Kuvankaappaus kattavuusraportista](Dokumentaatio/test_coverage.png)
+![Kuvankaappaus kattavuusraportista](https://raw.githubusercontent.com/ogveeti/tiralabra/refs/heads/main/Dokumentaatio/test_coverage.png)
 
 ## Mitä on testattu, miten tämä tehtiin?
 Ohjelmaa on testattu automaattisilla yksikkö- ja integraatiotesteillä, sekä laajemmin manuaalisesti kokonaisuutena.
