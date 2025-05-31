@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "tiralabra"
+version = "0.1.0"
+description = ""
+authors = ["ogveeti <veeti.ollila@helsinki.fi>"]
+readme = "README.md"
+packages = [{ include = "dtmf_decoder" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.3.7"
+pytest = "^8.3.5"
+coverage = "^7.8.2"
+
+[tool.poetry.scripts]
+dtmf-decoder = "dtmf_decoder:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+source = ["dtmf_decoder"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == .__main__.:",
+    "def __repr__",
+    "def __str__",
+    "raise NotImplementedError",
+]
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 180
