@@ -20,4 +20,5 @@ $ poetry run dtmf-decoder --realtime /home/user/Downloads/tiralabra-main/test_au
 ```
 - Käynnistysparametri --realtime on tarkoitettu reaaliaikaista äänitiedoston lukua simuloivaan käyttöön. Jos haluat dekoodata äänitiedoston nopeammin, jätä parametri pois.
 - Sovellus vaatii tällä hetkellä pakkaamattomia 16-bittisellä lineaarisella PCM-koodauksella olevia .wav-tiedostoja 8kHz näytteenottotaajuudella. Muut formaatit eivät toimi.
+- Voit kuunnella mukana tulevia äänitiedostoja erikseen saadaksesi kuvan millaisia häiriöitä niissä on mukana.
 - Sovellus ei vielä tällä hetkellä tarvitse ylimääräisiä ulkopuolisia riippuvuuksia ajamiseen, joten sitä voisi ajaa myös suoraan ilman Poetryn kautta asentamista. Ohjeistus Poetryä käyttäen on tehty tulevaisuuden varalle.
