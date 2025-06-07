@@ -132,14 +132,14 @@ def precalculate_goertzel_coeffs(frequencies, sample_rate, n):
 
 # Calculate the power at a specific frequency bin.
 def goertzel_power(samples, freq):
-    coeff = GOERTZEL_COEFFS[int(freq)] # The Goertzel coefficient works as a resonator set at a specific target frequency.
+    coeff = GOERTZEL_COEFFS[int(freq)] # The Goertzel coefficient is used to tune the digital filter to resonate at a specific target frequency.
 
-    # A delay line that stores two previous outputs of the filter:
+    # A delay line that stores two previous outputs of the filter, used for feedback which creates resonance:
     s_prev1 = 0
     s_prev2 = 0
 
     for sample in samples:
-        s = sample + coeff * s_prev1 - s_prev2 # A second-order IIR filter that builds up amplitude when the input matches a target frequency due to constructive interference.
+        s = sample + coeff * s_prev1 - s_prev2 # A second-order IIR filter that works as a resonator and builds up amplitude when the input matches a target frequency due to constructive interference.
         s_prev2 = s_prev1
         s_prev1 = s
     power = s_prev2 ** 2 + s_prev1 ** 2 - coeff * s_prev1 * s_prev2 # A power detector for the filter output, calculates a squared magnitude of the complex DFT result.
