@@ -5,6 +5,7 @@ import math
 import os
 import time
 import argparse
+import sounddevice as sd
 
 SAMPLE_RATE = 8000 # 8 kHz sampling rate, common in telephone and analog radio with ~4 kHz max. audio bandwidth.
 FRAME_SIZE = 205 # ~25,6 ms window duration. Commonly chosen to align DFT frequency bins well with DTMF tone frequencies.
@@ -18,6 +19,8 @@ MINIMUM_BREAK_FRAMES = 4   # Require a four frame long tone break (40 ms) to rep
 DTMF_FREQUENCIES = [697, 770, 852, 941, 1209, 1336, 1477, 1633] # Base frequencies.
 SECOND_HARMONICS = [1394, 1540, 1704, 1882, 2418, 2672, 2954, 3266] # Second harmonics of the base frequencies.
 GOERTZEL_COEFFS = {} # Global Goertzel coefficient lookup table, these are constant for each frequency bin.
+FULL_SCALE_POWER = 0.5 * 32767 * 32767 * FRAME_SIZE # Full scale power for the bin power bar-graph in UI.
+
 
 # DTMF frequency pairs in Hz for each symbol.
 DTMF_SYMBOLS = {
@@ -36,17 +39,25 @@ BUTTON_LAYOUT = [
 ]
 
 
+# Global variables for symbol state tracking.
+last_symbol = None
+repeat_count = 0
+printed_symbol = None
+break_frames = 0
+detected_sequence = ""
+
+
 # CLI argument parser.
 def parse_args():
     parser = argparse.ArgumentParser(description="DTMF decoder")
-    parser.add_argument("filepath", help="Path to WAV file")
-    parser.add_argument("--realtime", action="store_true", help="Run in real-time mode (slower, simulates live input)")
+    parser.add_argument("filepath", help="Path to WAV file or 'mic' for soundcard input")
+    parser.add_argument("--realtime", action="store_true", help="Run in real-time mode (slower, simulates live input for recorded files)")
     return parser.parse_args()
 
 
 # Clears the terminal screen, redraws a visual button layout and prints the detected symbol sequence.
-def draw_ui(detected_sequence, current_symbol=None):
-    os.system('clear')  # Only works on *nix platforms, use 'cls' instead on Windows.
+def draw_ui(detected_sequence, current_symbol=None, vu_level=None, bin_powers=None):
+    os.system('clear') # Only works on *nix platforms, use 'cls' instead on Windows.
     print("DTMF Decoder")
     print("-" * 20)
 
@@ -61,7 +72,33 @@ def draw_ui(detected_sequence, current_symbol=None):
 
     print("-" * 20)
     print(f"Detected: {detected_sequence}")
+
+    if vu_level is not None:
+        bar_length = 20
+        filled_length = int(bar_length * vu_level)
+        bar = '█' * filled_length + ' ' * (bar_length - filled_length)
+        print(f"Input level: |{bar}|")
     print()
+
+    if bin_powers is not None:
+        print("DTMF Bin Powers:\n")
+
+        # Prepare scaled bar heights.
+        scale = FULL_SCALE_POWER / 10
+
+        # Calculate height for each frequency, cap between 1 and 10.
+        bar_heights = [max(1, min(int(bin_powers[f] / scale), 10)) for f in DTMF_FREQUENCIES]
+
+        # Render top-down bars.
+        for level in reversed(range(1, 11)):  # Rows from top (10) to bottom (1).
+            line = ""
+            for height in bar_heights:
+                line += "  ▓  " if height >= level else "     "
+            print(line)
+
+        # Print frequency labels under the bars.
+        labels = [str(f).center(5) for f in DTMF_FREQUENCIES]
+        print("".join(labels))
 
 
 # Open, validate and read a WAV file into a list of individual real-valued PCM sample integers.
@@ -88,8 +125,8 @@ def read_wav_file(filepath):
                 raise ValueError("Compressed WAV files are not supported.")
 
             duration_sec = num_frames / SAMPLE_RATE
-            if duration_sec > 180:
-                raise ValueError("WAV file too long, max. 3 minutes allowed.")
+            if duration_sec > 240:
+                raise ValueError("WAV file too long, max. 4 minutes allowed.")
 
             frames = wav.readframes(num_frames)
             samples = struct.unpack("<{}h".format(num_frames), frames)
@@ -172,7 +209,7 @@ def process_frame(frame):
         low_power / (low_group_total + 1e-10) < DFT_BIN_POWER_RATIO_THRESHOLD or # Add 1e-10 to prevent division by zero.
         high_power / (high_group_total + 1e-10) < DFT_BIN_POWER_RATIO_THRESHOLD
     ):
-        return None # Reject noisy or unclear frames.
+        return None, powers # Reject noisy or unclear frames.
 
     # Check that tone does not have strong second harmonic, this is to differentiate DTMF tones from music or speech.
     for tone in (low_tone, high_tone):
@@ -181,15 +218,100 @@ def process_frame(frame):
             harmonic = SECOND_HARMONICS[idx]
             harmonic_power = goertzel_power(frame, harmonic)
             if harmonic_power > HARMONIC_POWER_THRESHOLD * powers[tone]:
-                return None # Reject tones with strong second harmonic.
+                return None, powers # Reject tones with strong second harmonic.
 
 
     #Lookup symbol for frequency pair.
     for symbol, (lf, hf) in DTMF_SYMBOLS.items():
         if lf == low_tone and hf == high_tone:
-            return symbol # Valid frequency combination found.
+            return symbol, powers # Valid frequency combination found.
 
-    return None # Invalid frequency combinations.
+    return None, powers # Invalid frequency combinations.
+
+
+def frame_state_tracking(frame):
+    global last_symbol, repeat_count, printed_symbol, break_frames, detected_sequence
+
+    # RMS level meter calculation.
+    rms = math.sqrt(sum(s ** 2 for s in frame) / len(frame))
+    vu_normalized = min(rms / 32768, 1.0)
+
+    # Symbol detection logic.
+    if is_silent_frame(frame, SILENT_FRAME_THRESHOLD):
+        symbol = None # Only process non-silent frames.
+        powers = {f: 0 for f in DTMF_FREQUENCIES}
+    else:
+        symbol, powers = process_frame(frame)
+
+    # Track consecutive detections of the same symbol.
+    if symbol == last_symbol and symbol is not None:
+        repeat_count += 1
+    else:
+        repeat_count = 1
+        last_symbol = symbol
+
+    # Track consecutive frames without valid tone.
+    if symbol is None:
+        break_frames += 1
+    else:
+        break_frames = 0
+
+    # Only print a symbol if it's been detected in enough consecutive frames and not repeated.
+    if repeat_count == MINIMUM_REPEAT_FRAMES and symbol != printed_symbol:
+        detected_sequence += symbol
+        printed_symbol = symbol
+
+    # Always update UI, with symbol only if confirmed.
+    draw_ui(
+        detected_sequence,
+        current_symbol=symbol if repeat_count >= MINIMUM_REPEAT_FRAMES else None,
+        vu_level=vu_normalized,
+        bin_powers = powers
+    )
+
+    # Allow re-printing same symbol after enough break frames.
+    if break_frames >= MINIMUM_BREAK_FRAMES:
+        printed_symbol = None
+
+
+def run_from_microphone():
+    print("Available input devices:\n")
+
+    devices = sd.query_devices()
+    input_devices = []
+
+    for i, dev in enumerate(devices):
+        if dev['max_input_channels'] > 0:
+            print(f"{i}: {dev['name']} (Input channels: {dev['max_input_channels']})")
+            input_devices.append(i)
+
+    print()
+    try:
+        index = int(input("Enter the number of the input device to use: "))
+        if index not in input_devices:
+            print("Invalid device index.")
+            return
+    except ValueError:
+        print("Invalid input.")
+        return
+
+    buffer = []
+
+    def callback(indata, frames, time_info, status):
+        nonlocal buffer
+        samples = indata[:, 0].tolist()
+        buffer.extend(samples)
+
+        while len(buffer) >= FRAME_SIZE:
+            frame = buffer[:FRAME_SIZE]
+            buffer = buffer[STEP_SIZE:]
+            frame_state_tracking(frame)
+
+    try:
+        with sd.InputStream(device=index, channels=1, samplerate=SAMPLE_RATE, dtype='int16', callback=callback):
+            input("Listening... Press Enter to stop.\n")
+    except Exception as e:
+        print(f"Failed to open input stream: {e}")
 
 
 def main():
@@ -202,44 +324,12 @@ def main():
     GOERTZEL_COEFFS = precalculate_goertzel_coeffs(DTMF_FREQUENCIES + SECOND_HARMONICS, SAMPLE_RATE, FRAME_SIZE)
 
     try:
-        samples = read_wav_file(filepath)
-
-        # Symbol state tracking.
-        last_symbol = None
-        repeat_count = 0
-        printed_symbol = None
-        break_frames = 0
-        detected_sequence = ""
-
-        for _, frame in enumerate(split_into_overlapping_frames(samples, FRAME_SIZE, STEP_SIZE, pseudo_real_time)):
-            if is_silent_frame(frame, SILENT_FRAME_THRESHOLD):
-                symbol = None # Only process non-silent frames.
-            else:
-                symbol = process_frame(frame)
-
-            # Track consecutive detections of the same symbol.
-            if symbol == last_symbol and symbol is not None:
-                repeat_count += 1
-            else:
-                repeat_count = 1
-                last_symbol = symbol
-
-            # Track consecutive frames without valid tone.
-            if symbol is None:
-                break_frames += 1
-            else:
-                break_frames = 0
-
-            # Only print a symbol if it's been detected in enough consecutive frames and not repeated.
-            if repeat_count == MINIMUM_REPEAT_FRAMES and symbol != printed_symbol:
-                detected_sequence += symbol
-                draw_ui(detected_sequence, current_symbol=symbol)
-                printed_symbol = symbol
-
-            # Allow re-printing same symbol after enough break frames.
-            if break_frames >= MINIMUM_BREAK_FRAMES:
-                printed_symbol = None
-                draw_ui(detected_sequence, current_symbol=None)
+        if filepath.lower() == "mic":
+            run_from_microphone()
+        else:
+            samples = read_wav_file(filepath)
+            for frame in split_into_overlapping_frames(samples, FRAME_SIZE, STEP_SIZE, pseudo_real_time):
+                frame_state_tracking(frame)
 
     except ValueError as e:
         print(f"Error: {e}")
