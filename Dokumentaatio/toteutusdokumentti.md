@@ -36,6 +36,7 @@ Goertzel-algoritmi on valittu, koska se on huomattavasti kevyempi kuin FFT, kun 
 - **Reaaliaikainen tarkkuus**: Symbolin toisto- ja taukologiikka toimii käytännössä hyvin, mutta sitä voisi kehittää esimerkiksi puskuroimalla edellisiä kehyksiä, jotta lyhyemmätkin painallukset havaitaan tarkasti.
 - **Käyttöliittymä**: Tekstipohjainen käyttöliittymä toimii, mutta oikea graafinen näkymä voisi olla kiva lisä, etenkin VU-mittarin ja taajuuspalkkien osalta.
 - **Syötteiden käsittely ja koodin loppuviilaus**: Mikrofonipohjainen tunnistus on tällä hetkellä eriytetty koodikannassa omaksi haarakseen, sillä se nojaa Linuxin kanssa toimiviin äänirajapintoihin, eikä toimi varmasti muilla alustoilla. Ohjelma vaatii tällä hetkellä toimiakseen 8kHz näytteenottotaajuutta tukevan äänikortin, jollaisia useimmat äänikortit eivät ole. Tällä hetkellä ratkaisuna on käyttää PortAudion kanssa välissä Alsaa, Pipewireä tai vastaavaa rajapintaa, joka hoitaa uudelleennäytteistyksen, mutta tästä aiheutuu paljon yhteensopivuusongelmia. Oikea ratkaisu olisi rakentaa uudelleennäytteistys mukaan ohjelmaan ja sitä kautta tuki yleisille kuluttajaäänikorteille.
+- **Testaus**: Mikrofonisyötteelle ei ole tehty automaattitestejä ja muutenkin niitä voisi laajentaa.
 
 
 ## Laajojen kielimallien käyttö
