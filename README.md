@@ -23,4 +23,7 @@ $ poetry run dtmf-decoder --realtime /home/user/Downloads/tiralabra-main/test_au
 - Voit kuunnella mukana tulevia äänitiedostoja erikseen saadaksesi kuvan millaisia häiriöitä niissä on mukana.
 - Sovellus ei vielä tällä hetkellä tarvitse ylimääräisiä ulkopuolisia riippuvuuksia ajamiseen, joten sitä voisi ajaa myös suoraan ilman Poetryn kautta asentamista. Ohjeistus Poetryä käyttäen on tehty tulevaisuuden varalle.
 
-- Jos haluat käyttää sovellusta reaaliaikaisena äänikorttisyötteellä, kloonaa päähaaran sijaan soundcard-input-support -haara. Tällöin tarvitset PortAudion kanssa toimivan äänikorttilähteen, joka näkyy ohjelmalle 8kHz näytteenottotaajuutta tukevana. Suurella todennäköisyydellä törmäät yhteensopivuusongelmiin äänirajapintojen kanssa ja ne joutuu ratkomaan alustakohtaisesti.
+- Jos haluat käyttää sovellusta reaaliaikaisena äänikorttisyötteellä, kloonaa päähaaran sijaan soundcard-input-support -haara. Tällöin tarvitset PortAudion kanssa toimivan äänikorttilähteen, joka näkyy ohjelmalle 8kHz näytteenottotaajuutta tukevana. Suurella todennäköisyydellä törmäät yhteensopivuusongelmiin äänirajapintojen kanssa ja ne joutuu ratkomaan alustakohtaisesti. Käynnistyskomento on tällöin:
+```
+$ python __init__.py mic
+```
