@@ -27,7 +27,7 @@ Ohjelman keskeinen laskennallinen komponentti on Goertzel-algoritmi, jota käyte
 
 ## Suorituskyky- ja O-analyysivertailu
 
-Goertzel-algoritmi on valittu, koska se on huomattavasti kevyempi kuin FFT, kun halutaan laskea vain muutaman ennalta tiedetyn taajuuden spektritehoja. Tyypillinen FFT (Fast Fourier Transform) toimii `O(N log N)` aikavaativuudella, mutta on tarpeettoman raskas DTMF-signaaleille, joissa kiinnostavia taajuuksia on vain 8. Tämän vuoksi Goertzel on optimaalisempi ja mahdollistaa kevyet reaaliaikaiset toteutuksen myös pienitehoisilla alustoilla.
+Goertzel-algoritmi on valittu, koska se on huomattavasti kevyempi kuin yleiset FFT-algoritmit, kun halutaan laskea vain muutaman ennalta tiedetyn taajuuden spektritehoja. Tyypillinen FFT toimii `O(N log N)` aikavaativuudella, mutta on tarpeettoman raskas DTMF-signaaleille, joissa kiinnostavia taajuuksia on vain 8. Tämän vuoksi Goertzel on optimaalisempi ja mahdollistaa kevyet reaaliaikaiset toteutuksen myös pienitehoisilla alustoilla.
 
 ## Työn puutteet ja parannusehdotukset
 
